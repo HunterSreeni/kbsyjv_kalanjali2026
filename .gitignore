@@ -11,10 +11,14 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
 
 # Playwright CLI testing artifacts
 .playwright/
 .playwright-cli/
+
+# Supabase CLI local cache
+supabase/.temp/
 
 # Editor directories and files
 .vscode/*

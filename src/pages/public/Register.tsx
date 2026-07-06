@@ -55,7 +55,14 @@ export function Register() {
     },
   })
 
-  const { register, control, handleSubmit, watch, setValue } = useForm<RegisterFormValues>({
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<RegisterFormValues>({
     defaultValues: {
       game_id: '',
       age_category_id: '',
@@ -278,7 +285,23 @@ export function Register() {
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium text-stone-700 dark:text-stone-300">Contact Phone</span>
-          <input {...register('contact_phone', { required: true })} className={inputClass} />
+          <input
+            type="tel"
+            inputMode="numeric"
+            maxLength={10}
+            placeholder="10-digit phone number"
+            {...register('contact_phone', {
+              required: true,
+              pattern: /^[0-9]{10}$/,
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10)
+              },
+            })}
+            className={inputClass}
+          />
+          {errors.contact_phone && (
+            <span className="text-red-600 dark:text-red-400 text-xs">Enter a 10-digit phone number</span>
+          )}
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium text-stone-700 dark:text-stone-300">Contact Email (optional)</span>

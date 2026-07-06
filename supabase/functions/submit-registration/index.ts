@@ -25,6 +25,7 @@ function json(body: unknown, status: number) {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const PHONE_RE = /^[0-9]{10}$/
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS })
@@ -53,6 +54,9 @@ Deno.serve(async (req) => {
 
     if (!game_id || !age_category_id || !contact_name?.trim() || !contact_phone?.trim()) {
       return json({ error: 'Missing required fields' }, 400)
+    }
+    if (!PHONE_RE.test(contact_phone.trim())) {
+      return json({ error: 'Contact phone must be exactly 10 digits' }, 400)
     }
     if (!Array.isArray(participants) || participants.length === 0) {
       return json({ error: 'At least one participant is required' }, 400)
