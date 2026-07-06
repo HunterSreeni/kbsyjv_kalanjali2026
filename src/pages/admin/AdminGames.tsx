@@ -53,7 +53,12 @@ export function AdminGames() {
   }
 
   async function updateGame(id: string, patch: Partial<Game>) {
-    await supabase.from('games').update(patch).eq('id', id)
+    const { error } = await supabase.from('games').update(patch).eq('id', id)
+    if (error) {
+      setError(error.message)
+      return
+    }
+    setError(null)
     invalidate()
   }
 

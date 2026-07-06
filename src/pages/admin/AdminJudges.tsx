@@ -76,11 +76,14 @@ export function AdminJudges() {
   }
 
   async function toggleAssignment(judgeId: string, gameId: string, assigned: boolean) {
-    if (assigned) {
-      await supabase.from('judge_assignments').delete().match({ judge_profile_id: judgeId, game_id: gameId })
-    } else {
-      await supabase.from('judge_assignments').insert({ judge_profile_id: judgeId, game_id: gameId })
+    const { error } = assigned
+      ? await supabase.from('judge_assignments').delete().match({ judge_profile_id: judgeId, game_id: gameId })
+      : await supabase.from('judge_assignments').insert({ judge_profile_id: judgeId, game_id: gameId })
+    if (error) {
+      setError(error.message)
+      return
     }
+    setError(null)
     invalidate()
   }
 

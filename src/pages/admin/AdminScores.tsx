@@ -19,6 +19,7 @@ export function AdminScores() {
   const [scores, setScores] = useState<ScoreRow[]>([])
   const [overrideValue, setOverrideValue] = useState('')
   const [overrideNote, setOverrideNote] = useState('')
+  const [overrideError, setOverrideError] = useState<string | null>(null)
 
   const registrationsQuery = useQuery({
     queryKey: ['admin', 'scores', 'registrations'],
@@ -46,25 +47,37 @@ export function AdminScores() {
     await fetchScores(registration.id)
     setOverrideValue(registration.override_score !== null ? String(registration.override_score) : '')
     setOverrideNote(registration.override_note ?? '')
+    setOverrideError(null)
     setExpanded(registration.id)
   }
 
   async function saveOverride(registrationId: string) {
     if (overrideValue.trim() === '') return
-    await supabase
+    const score = Number(overrideValue)
+    if (score < 0 || score > 100) {
+      setOverrideError('Override score must be between 0 and 100')
+      return
+    }
+    const { error } = await supabase
       .from('registrations')
-      .update({ override_score: Number(overrideValue), override_note: overrideNote.trim() || null })
+      .update({ override_score: score, override_note: overrideNote.trim() || null })
       .eq('id', registrationId)
-    queryClient.invalidateQueries({ queryKey: ['admin', 'scores'] })
+    setOverrideError(error ? error.message : null)
+    if (!error) queryClient.invalidateQueries({ queryKey: ['admin', 'scores'] })
   }
 
   async function clearOverride(registrationId: string) {
-    await supabase
+    const { error } = await supabase
       .from('registrations')
       .update({ override_score: null, override_note: null })
       .eq('id', registrationId)
+    if (error) {
+      setOverrideError(error.message)
+      return
+    }
     setOverrideValue('')
     setOverrideNote('')
+    setOverrideError(null)
     queryClient.invalidateQueries({ queryKey: ['admin', 'scores'] })
   }
 
@@ -103,6 +116,8 @@ export function AdminScores() {
                 <div className="flex gap-2 mt-3 items-center flex-wrap">
                   <input
                     type="number"
+                    min={0}
+                    max={100}
                     placeholder="Override score"
                     value={overrideValue}
                     onChange={(e) => setOverrideValue(e.target.value)}
@@ -123,6 +138,7 @@ export function AdminScores() {
                     </button>
                   )}
                 </div>
+                {overrideError && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{overrideError}</p>}
               </div>
             )}
           </div>

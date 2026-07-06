@@ -288,13 +288,19 @@ export function Register() {
           <input
             type="tel"
             inputMode="numeric"
-            maxLength={10}
+            maxLength={15}
             placeholder="10-digit phone number"
             {...register('contact_phone', {
               required: true,
               pattern: /^[0-9]{10}$/,
               onChange: (e) => {
-                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10)
+                // Take the last 10 digits, not the first 10 - handles pasted
+                // numbers with a leading country code (e.g. +91-9876543210)
+                // without truncating into the middle of the real number.
+                // maxLength=15 above just bounds raw paste length (with a
+                // country code, dashes, spaces) before this runs.
+                const digits = e.target.value.replace(/\D/g, '')
+                e.target.value = digits.slice(-10)
               },
             })}
             className={inputClass}

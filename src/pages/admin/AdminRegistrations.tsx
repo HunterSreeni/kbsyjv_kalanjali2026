@@ -14,6 +14,7 @@ export function AdminRegistrations() {
   const [statusFilter, setStatusFilter] = useState<RegistrationStatus | ''>('')
   const [expanded, setExpanded] = useState<string | null>(null)
   const [participants, setParticipants] = useState<Participant[]>([])
+  const [error, setError] = useState<string | null>(null)
 
   const registrationsQuery = useQuery({
     queryKey: ['admin', 'registrations', statusFilter],
@@ -31,7 +32,12 @@ export function AdminRegistrations() {
 
   async function updateStatus(id: string, status: RegistrationStatus) {
     const { error } = await supabase.from('registrations').update({ status }).eq('id', id)
-    if (!error) queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] })
+    if (error) {
+      setError(error.message)
+      return
+    }
+    setError(null)
+    queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] })
   }
 
   async function toggleExpand(id: string) {
@@ -90,6 +96,7 @@ export function AdminRegistrations() {
         <option value="confirmed">Confirmed</option>
         <option value="rejected">Rejected</option>
       </select>
+      {error && <p className="text-red-600 dark:text-red-400 text-sm mb-4">{error}</p>}
 
       {registrationsQuery.isLoading && <p>Loading...</p>}
 

@@ -14,6 +14,7 @@ export function JudgeDashboard() {
   const { profile } = useAuth()
   const queryClient = useQueryClient()
   const [inputs, setInputs] = useState<Record<string, { score: string; remarks: string }>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const registrationsQuery = useQuery({
     queryKey: ['judge', 'registrations'],
@@ -54,16 +55,22 @@ export function JudgeDashboard() {
     if (!profile) return
     const input = inputs[registrationId]
     if (!input || input.score.trim() === '') return
-    await supabase.from('scores').upsert(
+    const score = Number(input.score)
+    if (score < 0 || score > 100) {
+      setErrors((prev) => ({ ...prev, [registrationId]: 'Score must be between 0 and 100' }))
+      return
+    }
+    const { error } = await supabase.from('scores').upsert(
       {
         registration_id: registrationId,
         judge_id: profile.id,
-        score: Number(input.score),
+        score,
         remarks: input.remarks || null,
       },
       { onConflict: 'registration_id,judge_id' },
     )
-    queryClient.invalidateQueries({ queryKey: ['judge', 'my_scores'] })
+    setErrors((prev) => ({ ...prev, [registrationId]: error ? error.message : '' }))
+    if (!error) queryClient.invalidateQueries({ queryKey: ['judge', 'my_scores'] })
   }
 
   const myScoreByRegistration = new Map((myScoresQuery.data ?? []).map((s) => [s.registration_id, s]))
@@ -90,6 +97,8 @@ export function JudgeDashboard() {
               <div className="flex gap-2">
                 <input
                   type="number"
+                  min={0}
+                  max={100}
                   placeholder="Score"
                   value={input.score}
                   onChange={(e) => setInputs((prev) => ({ ...prev, [r.id]: { ...input, score: e.target.value } }))}
@@ -105,6 +114,7 @@ export function JudgeDashboard() {
                   {existing ? 'Update' : 'Save'}
                 </button>
               </div>
+              {errors[r.id] && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{errors[r.id]}</p>}
             </div>
           )
         })}
