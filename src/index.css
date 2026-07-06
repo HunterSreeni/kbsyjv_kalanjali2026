@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* Class-based dark mode toggle (ThemeToggle sets/removes .dark on <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-saffron-50: #fff8f0;
+  --color-saffron-100: #ffedd9;
+  --color-saffron-200: #ffd9ad;
+  --color-saffron-300: #ffc078;
+  --color-saffron-400: #ffa94d;
+  --color-saffron-500: #ff9933;
+  --color-saffron-600: #f27f0c;
+  --color-saffron-700: #c86a0a;
+  --color-saffron-800: #9c540c;
+  --color-saffron-900: #7a420d;
+  --color-saffron-950: #452207;
+}
+
+:root {
+  color-scheme: light dark;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Native <select> popups are OS-rendered, but most browsers do honor
+   background/color set on select + option for the dropdown list itself. */
+select,
+option {
+  background-color: var(--color-saffron-50);
+  color: var(--color-saffron-950);
+}
+html.dark select,
+html.dark option {
+  background-color: #241a12;
+  color: var(--color-saffron-100);
+}
