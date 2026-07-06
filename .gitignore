@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 .env
+CREDENTIALS.md
 
 # Playwright CLI testing artifacts
 .playwright/
